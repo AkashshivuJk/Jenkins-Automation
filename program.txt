@@ -1,0 +1,462 @@
+PROGRAM 4 
+
+
+
+import java.util.Scanner;
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of bits in message: ");
+        int messageBits = sc.nextInt();
+        int[] message = new int[messageBits];
+        System.out.println("Enter message bits:");
+        for (int i = 0; i < messageBits; i++) {
+            message[i] = sc.nextInt();
+        }
+        System.out.print("Enter number of bits in generator: ");
+        int genBits = sc.nextInt();
+        int[] gen = new int[genBits];
+        System.out.println("Enter generator bits:");
+        for (int i = 0; i < genBits; i++) {
+            gen[i] = sc.nextInt();
+        }
+        int totalBits = messageBits + genBits - 1;
+        int[] appMessage = new int[totalBits];
+        System.arraycopy(message, 0, appMessage, 0, messageBits);
+        System.out.println("Message bits: ");
+        displayArray(message);
+        System.out.println("Generator bits: ");
+        displayArray(gen);
+        System.out.println("Appended message: ");
+        displayArray(appMessage);
+        int[] rem = computeCRC(appMessage.clone(), gen);
+        int[] transMessage = new int[totalBits];
+        for (int i = 0; i < totalBits; i++) {
+            transMessage[i] = appMessage[i] ^ rem[i];
+        }
+        System.out.println("Transmitted message: ");
+        displayArray(transMessage);
+        System.out.println("Enter received message (" + totalBits + " bits):");
+        for (int i = 0; i < totalBits; i++) {
+            transMessage[i] = sc.nextInt();
+        }
+        System.out.println("Received message: ");
+        displayArray(transMessage);
+        rem = computeCRC(transMessage, gen);
+        if (isErrorFree(rem)) {
+            System.out.println("No error in the received message!");
+        } else {
+            System.out.println("There is an error in the received message.");
+        }
+        sc.close();
+    }
+    static int[] computeCRC(int[] message, int[] gen) {
+        int current = 0;
+        while ((message.length - current) >= gen.length) {
+            for (int i = 0; i < gen.length; i++) {
+                message[current + i] ^= gen[i];
+            }
+            while (current < message.length && message[current] == 0) {
+                current++;
+            }}
+        return message;
+    }
+    static boolean isErrorFree(int[] rem) {
+        for (int bit : rem) {
+            if (bit != 0) return false;
+        }
+        return true;
+    }
+    static void displayArray(int[] array) {
+        for (int bit : array) {
+            System.out.print(bit + " ");
+        }
+        System.out.println();
+    }}
+
+
+
+PROGRAM 5
+
+
+import java.util.Arrays;
+import java.util.Random;
+class GoBackNProtocol {
+private final int WINDOW_SIZE; 
+private final int TOTAL_FRAMES; 
+private int nextFrameToSend = 0; 
+private int frameExpectedByReceiver = 0;  
+public GoBackNProtocol(int totalFrames, int windowSize) {
+this.TOTAL_FRAMES = totalFrames;
+this.WINDOW_SIZE = windowSize;
+}
+public void sendFrames() {
+Random random = new Random();
+while (nextFrameToSend < TOTAL_FRAMES) {
+for (int i = 0; i < WINDOW_SIZE && nextFrameToSend < TOTAL_FRAMES; i++) {
+System.out.println("Sender: Sending frame " + nextFrameToSend);
+nextFrameToSend++;
+}
+if (random.nextBoolean()) {
+frameExpectedByReceiver += WINDOW_SIZE;
+System.out.println("Receiver: ACK received for frames up to " + frameExpectedByReceiver);
+} else {
+(frameExpectedByReceiver));
+System.out.println("Receiver: ACK lost, resending frames from " +
+nextFrameToSend = frameExpectedByReceiver; 
+}}
+System.out.println("All frames sent and acknowledged successfully.");
+}
+public static void main(String[] args) {
+int totalFrames = 10; 
+int windowSize = 4; 
+GoBackNProtocol protocol = new GoBackNProtocol(totalFrames, windowSize);
+protocol.sendFrames();
+}}
+
+
+
+PROGRAM 6
+
+
+
+
+import java.util.Scanner;
+
+public class BellmanFord {
+    private int[] distances;
+    private int numberOfVertices;
+    private static final int MAX_VALUE = 999;
+
+    public BellmanFord(int numberOfVertices) {
+        this.numberOfVertices = numberOfVertices;
+        distances = new int[numberOfVertices + 1];
+    }
+    public void evaluate(int source, int[][] adjacencyMatrix) {
+        for (int i = 1; i <= numberOfVertices; i++) {
+            distances[i] = MAX_VALUE;
+        }
+        distances[source] = 0;
+        for (int k = 1; k <= numberOfVertices - 1; k++) {
+            for (int i = 1; i <= numberOfVertices; i++) {
+                for (int j = 1; j <= numberOfVertices; j++) {
+                    if (adjacencyMatrix[i][j] != MAX_VALUE && distances[i] != MAX_VALUE &&
+                        distances[j] > distances[i] + adjacencyMatrix[i][j]) {
+                        distances[j] = distances[i] + adjacencyMatrix[i][j];
+                    }}}}
+        for (int i = 1; i <= numberOfVertices; i++) {
+            for (int j = 1; j <= numberOfVertices; j++) {
+                if (adjacencyMatrix[i][j] != MAX_VALUE && distances[i] != MAX_VALUE &&
+                    distances[j] > distances[i] + adjacencyMatrix[i][j]) {
+                    System.out.println("The Graph contains a negative edge cycle");
+                    return;
+                }}}
+        for (int i = 1; i <= numberOfVertices; i++) {
+            System.out.println("Distance from source " + source + " to " + i + " is " + distances[i]);
+        }}
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the number of vertices:");
+        int numberOfVertices = scanner.nextInt();
+        int[][] adjacencyMatrix = new int[numberOfVertices + 1][numberOfVertices + 1];
+        System.out.println("Enter the adjacency matrix:");
+        for (int i = 1; i <= numberOfVertices; i++) {
+            for (int j = 1; j <= numberOfVertices; j++) {
+                adjacencyMatrix[i][j] = scanner.nextInt();
+            }}
+        System.out.println("Enter the source vertex:");
+        int source = scanner.nextInt();
+        BellmanFord bellmanFord = new BellmanFord(numberOfVertices);
+        bellmanFord.evaluate(source, adjacencyMatrix);
+        scanner.close();
+    }}
+
+
+
+
+
+program 7 
+
+
+import java.net.*;
+import java.io.*;
+public class TCPS {
+    public static void main(String[] args) throws Exception {
+        ServerSocket serverSocket = new ServerSocket(4000);
+        System.out.println("Server ready for connection...");
+        Socket socket = serverSocket.accept();
+        System.out.println("Connection established. Waiting for file name...");
+        BufferedReader clientInput = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        String fileName = clientInput.readLine();
+        BufferedReader fileReader = new BufferedReader(new FileReader(fileName));
+        PrintWriter clientOutput = new PrintWriter(socket.getOutputStream(), true);
+        String line;
+        while ((line = fileReader.readLine()) != null) {
+            clientOutput.println(line);
+        }
+        fileReader.close();
+        clientInput.close();
+        clientOutput.close();
+        socket.close();
+        serverSocket.close();
+    }}
+
+
+//TCP Client
+import java.net.*;
+import java.io.*;
+public class TCPC {
+    public static void main(String[] args) throws Exception {
+        Socket socket = new Socket("127.0.0.1", 4000);
+        System.out.println("Enter the filename:");
+        BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
+        String fileName = userInput.readLine();
+        PrintWriter socketOutput = new PrintWriter(socket.getOutputStream(), true);
+        socketOutput.println(fileName);
+        BufferedReader socketInput = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        String line;
+        while ((line = socketInput.readLine()) != null) {
+            System.out.println(line);
+        }
+        userInput.close();
+        socketInput.close();
+        socketOutput.close();
+        socket.close();
+    }}
+
+
+
+program 8 
+
+
+UDP Server Source code:
+import java.io.*;
+importjava.net.*;
+importjava.util.*;
+public class udps
+{
+publicstaticvoid main(String[]args)
+{
+DatagramSocketskt=null;
+Scannersc=newScanner(System.in); try
+{
+skt=newDatagramSocket(2400
+); byte[] buffer=new
+byte[1000]; while(true)
+{
+DatagramPacketrequest=newDatagramPacket(buffer,buffer.length);
+skt.receive(request);
+Stringmessage=sc.nextLine();
+byte[]sendMsg=message.getByte
+s(); DatagramPacket reply=new
+DatagramPacket(sendMsg,sendMsg.length,request.getAddress(),request.getPort());
+skt.send(reply);
+}
+}
+catch(Exceptionex)
+{
+}
+}
+}
+
+UDP Client Source code:
+
+import java.io.*;
+importjava.net.*;
+publicclassudpc
+{
+publicstaticvoid main(String[]args)
+{
+DatagramSocketskt;
+try
+{
+skt=new DatagramSocket();
+Stringmsg="textmessage";
+byte[]b=msg.getBytes();
+InetAddresshost=InetAddress.getByName("127.0.0.1");
+intserverSocket=2400;
+DatagramPacketrequest=newDatagramPacket(b,b.length,host,serverSocket);
+skt.send(request);
+byte[]buffer=newbyte[1000];
+DatagramPacketreply=newDatagramPacket(buffer,buffer.length);
+skt.receive(reply);
+System.out.println("clientrecieved:"+newString(reply.getData()));
+skt.close();
+}
+catch(Exceptionex){}
+}
+}
+
+
+
+PROGRAM 9
+
+
+import java.util.Scanner;
+
+public class RSA {
+    public static int p, q, n, t, flag, msg, temp;
+    public static int[] e = new int[100];
+    public static int[] d = new int[100];
+
+    public static int prime(int pr) {
+        int i;
+        double a = Math.sqrt(pr);
+        int m = (int) a;
+        for (i = 2; i <= m; i++) {
+            if (pr % i == 0)
+                return 0;
+        }
+        return 1;
+    }
+    public static void ce() {
+        int k = 0;
+        for (int i = 2; i < t; i++) {
+            if (t % i == 0)
+                continue;
+            flag = prime(i);
+            if (flag == 1 && i != p && i != q) {
+                e[k] = i;
+                flag = cd(e[k]);
+                if (flag > 0) {
+                    d[k] = flag;
+                    k++;
+                }
+                if (k == 99)
+                    break;
+            }}}
+    public static int cd(int x) {
+        int k = 1;
+        while (true) {
+            k = k + t;
+            if (k % x == 0)
+                return k / x;
+        }
+    }
+    public static void encrypt() {
+        int pt, ct, key = e[0], k;
+        pt = msg;
+        k = 1;
+        for (int j = 0; j < key; j++) {
+            k = k * pt;
+            k = k % n;
+        }
+        ct = k;
+        temp = ct;
+        System.out.println("\nThe Encrypted Message is: " + ct);
+    }
+    public static void decrypt() {
+        int pt, ct, key = d[0], k;
+        ct = temp;
+        k = 1;
+        for (int j = 0; j < key; j++) {
+            k = k * ct;
+            k = k % n;
+        }
+        pt = k;
+        System.out.println("\nThe Decrypted Message is: " + pt);
+    }
+    public static void main(String args[]) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter First Prime Number:");
+        p = sc.nextInt();
+        flag = prime(p);
+        if (flag == 0) {
+            System.out.println("Wrong Input");
+            System.exit(1);
+        }
+        System.out.println("Enter Another Prime Number:");
+        q = sc.nextInt();
+        flag = prime(q);
+        if (flag == 0 || p == q) {
+            System.out.println("Wrong Input");
+            System.exit(1);
+        }
+        System.out.println("Enter Message:");
+        msg = sc.nextInt();
+        n = p * q;
+        t = (p - 1) * (q - 1);
+        ce();
+        System.out.println("Possible Values of e and d are:");
+        for (int i = 0; i < e.length && e[i] != 0; i++) {
+            System.out.printf("\ne = %d\td = %d", e[i], d[i]);
+        }
+        encrypt();
+        decrypt();
+        sc.close();
+    }
+}
+
+
+
+
+PROGRAM 10
+
+
+
+import java.util.Random;
+import java.util.Scanner;
+
+public class Leaky {
+    public static int bsize = 0, packet, tgen, j = 1;
+    public static String stop = null;
+    public static final int bmax = 1024; // Maximum bucket size
+    public static final int orate = 100; // Output rate
+    public static final int delay = 1500; // Delay in milliseconds
+    public static Random r = new Random();
+    public static Random t = new Random();
+    public class Generating extends Thread {
+        public void run() {
+            while (stop == null) {
+                tgen = t.nextInt(3000); // Random interval for packet generation
+                packet = r.nextInt(512); // Random packet size
+                if (bsize + packet < bmax) {
+                    bsize += packet;
+                    System.out.printf("%13d%15d%15d%20d\n", j++, packet, bsize, bmax - bsize);
+                } else {
+                    System.out.println("Bucket Overflow, " + packet + " bytes discarded.");
+                }
+                try {
+                    Thread.sleep(tgen);
+                } catch (Exception e) {
+                    System.out.println("Error in Generating Thread: " + e.getMessage());
+                }}}}
+    public class Leaking extends Thread {
+        public void run() {
+            while (true) {
+                if (bsize > 0 && bsize - orate > 0) {
+                    bsize -= orate; // Leak packets at output rate
+                    System.out.printf("%38d%20d%15d\n", bsize, bmax - bsize, orate);
+                } else {
+                    System.out.printf("%38d%20d%15d\n", 0, bmax, bsize);
+                    bsize = 0;
+                    if (stop != null) {
+                        return;
+                    }}
+                try {
+                    Thread.sleep(delay);
+                } catch (Exception e) {
+                    System.out.println("Error in Leaking Thread: " + e.getMessage());
+                }}}}
+    public static void main(String[] args) {
+        Leaky le = new Leaky();
+        Scanner in = new Scanner(System.in);
+        Generating g = le.new Generating();
+        Leaking l = le.new Leaking();
+        System.out.println("Started");
+        System.out.println("Output Rate is: " + orate + " bytes/sec");
+        System.out.println("Interval: " + ((float) delay / 1000) + " sec");
+        System.out.println("Press any key to stop the input.");
+        System.out.printf("%13s%15s%15s%20s\n", "Packet No.", "Input Packet", "Bucket Filled", "Remaining Space");
+        g.start();
+        try {
+            Thread.sleep(10); // Ensures both threads do not clash initially
+        } catch (Exception e) {
+            System.out.println("Error in Main Thread: " + e.getMessage());
+        }
+        l.start();
+        stop = in.next(); // Wait for user input to stop packet generation
+        System.out.println("Stopping the input...");
+        in.close();
+    }
+}
