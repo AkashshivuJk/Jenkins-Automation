@@ -2,10 +2,11 @@ pipeline {
     agent any
     stages {
         stage('Clone Repository') {
-            steps {
-                git 'https://github.com/AkashshivuJk/Jenkins-Automation.git'
-            }
-        }
+    steps {
+        git branch: 'main', url: 'https://github.com/AkashshivuJk/Jenkins-Automation.git'
+    }
+}
+
         stage('Build') {
             steps {
                 sh 'chmod +x build.sh'
